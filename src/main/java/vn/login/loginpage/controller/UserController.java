@@ -8,10 +8,11 @@ import vn.login.loginpage.domain.User;
 import vn.login.loginpage.service.UserService;
 import vn.login.loginpage.util.error.InvalidException;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
-@RequestMapping("/api/v1")
+// @RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
 
@@ -19,13 +20,18 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/user")
-    public User createNewUser(@RequestBody User user) throws InvalidException {
-        if (this.userService.checkExistsByEmail(user.getEmail())) {
-            throw new InvalidException("Email" + user.getEmail() + "already exists");
-        }
+    // @PostMapping("/user")
+    // public User createNewUser(@RequestBody User user) throws InvalidException {
+    // if (this.userService.checkExistsByEmail(user.getEmail())) {
+    // throw new InvalidException("Email" + user.getEmail() + "already exists");
+    // }
 
-        return this.userService.handleSaveUser(user);
+    // return this.userService.handleSaveUser(user);
+    // }
+
+    @GetMapping("/")
+    public String testAPI() {
+        return "createNewUser";
     }
 
 }
