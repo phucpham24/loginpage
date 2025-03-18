@@ -16,6 +16,7 @@ public class SecurityConfig {
 
         String[] whiteList = {
                 "/",
+                "/api/v1/user/",
                 "/api/v1/auth/login",
                 "/api/v1/auth/refresh"
         };
@@ -24,11 +25,11 @@ public class SecurityConfig {
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers(whiteList).permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/companies/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/jobs/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
-                                .anyRequest().authenticated())
+                                // .requestMatchers(whiteList).permitAll()
+                                // .requestMatchers(HttpMethod.GET, "/api/v1/companies/**").permitAll()
+                                // .requestMatchers(HttpMethod.GET, "/api/v1/jobs/**").permitAll()
+                                // .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
+                                .anyRequest().permitAll())
                 // .anyRequest().permitAll())
                 // .exceptionHandling(
                 // exceptions -> exceptions
