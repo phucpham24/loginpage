@@ -1,5 +1,7 @@
 package vn.login.loginpage.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import vn.login.loginpage.domain.User;
@@ -21,4 +23,7 @@ public class UserService {
         return this.userRepository.existsByEmail(email);
     }
 
+    public List<User> getAllUsers() {
+        return this.userRepository.findAll();
+    }
 }
