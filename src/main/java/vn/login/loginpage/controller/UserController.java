@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/api/v1")
 public class UserController {
     private UserService userService;
 
@@ -48,5 +47,4 @@ public class UserController {
         List<User> users = this.userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
-
 }
