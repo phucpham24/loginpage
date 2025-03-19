@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
 import vn.login.loginpage.domain.dto.LoginDTO;
+import vn.login.loginpage.domain.dto.RestLoginDTO;
+import vn.login.loginpage.util.SecurityUtil;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,13 +19,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AuthController {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final SecurityUtil securityUtil;
 
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.securityUtil = securityUtil;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginDTO> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<RestLoginDTO> login(@RequestBody LoginDTO loginDTO) {
         // input username/password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());
@@ -31,10 +35,15 @@ public class AuthController {
         // valid user by loadUserByUsername
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
+        // authentication does not have user password
+        String accessToken = this.securityUtil.createToken(authentication);
+
         // impose (if success) in SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return ResponseEntity.status(HttpStatus.OK).body(loginDTO);
+        RestLoginDTO restLoginDTO = new RestLoginDTO();
+        restLoginDTO.setAccessToken(accessToken);
+        return ResponseEntity.status(HttpStatus.OK).body(restLoginDTO);
     }
 
 }

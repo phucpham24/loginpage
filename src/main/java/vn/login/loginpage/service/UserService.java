@@ -30,4 +30,12 @@ public class UserService {
     public User getUserByUserName(String email) {
         return this.userRepository.findUserByEmail(email);
     }
+
+    public User getUsersById(Long id) {
+        return this.userRepository.findUserById(id);
+    }
+
+    public void deleteUserById(Long id) {
+        this.userRepository.deleteById(id);
+    }
 }

@@ -38,15 +38,4 @@ public class User {
 
     private String address;
 
-    @Column(columnDefinition = "LONGTEXT")
-    private String refreshToken;
-    @Column(name = "created_at")
-    private Instant createdAt;
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-    @Column(name = "created_by")
-    private Instant CreatedBy;
-    @Column(name = "updated_by")
-    private Instant UpdatedBy;
-
 }

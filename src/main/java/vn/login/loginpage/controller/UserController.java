@@ -16,9 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 public class UserController {
@@ -46,5 +49,31 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = this.userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    @PutMapping("/users")
+    public ResponseEntity<User> updateUser(@RequestBody User userUpdate) throws InvalidException {
+        User user = this.userService.getUsersById(userUpdate.getId());
+        if (user == null) {
+            throw new InvalidException("User not found");
+        }
+
+        String hashPassword = this.passwordEncoder.encode(userUpdate.getPassword());
+
+        user.setAddress(userUpdate.getAddress());
+        user.setAge(userUpdate.getAge());
+        user.setEmail(userUpdate.getEmail());
+        user.setGender(userUpdate.getGender());
+        user.setName(userUpdate.getName());
+        user.setPassword(hashPassword);
+        User userUpdated = this.userService.handleSaveUser(user);
+        return ResponseEntity.status(HttpStatus.OK).body(userUpdated);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable("id") long id) throws InvalidException {
+
+        this.userService.deleteUserById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }
