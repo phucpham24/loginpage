@@ -13,6 +13,7 @@ import vn.login.loginpage.domain.response.RestResponse;
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(value = {
+            InvalidException.class,
             UsernameNotFoundException.class,
             BadCredentialsException.class,
     })

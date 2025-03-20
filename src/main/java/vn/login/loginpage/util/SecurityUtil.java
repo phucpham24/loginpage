@@ -34,7 +34,7 @@ public class SecurityUtil {
     @Value("${jwt.token-validity-in-seconds}")
     private Long jwtExpire;
 
-    public String createToken(Authentication authentication) {
+    public String createAccessToken(Authentication authentication) {
         Instant now = Instant.now();
         Instant validity = now.plus(this.jwtExpire, ChronoUnit.SECONDS);
 
