@@ -1,25 +1,40 @@
 # JWT Authentication with Spring Boot
 
-## Overview
-This project is a Spring Boot application that implements JSON Web Token (JWT) authentication and access tokens. It provides secure authentication and authorization mechanisms for RESTful APIs. Currently, the refresh token functionality has not yet been implemented.
+## 📌 Overview
+This project is a **Spring Boot** application that implements **JWT (JSON Web Token) authentication** for securing RESTful APIs. It provides a robust authentication and authorization mechanism using access tokens. Currently, **refresh token functionality is not yet implemented**.
 
-## Features
-- User authentication using JWT.
-- Secure access to protected resources via access tokens.
-- Role-based authorization.
-- Token validation middleware.
-- Exception handling for authentication and authorization errors.
+## 🚀 Features
+- 🔐 **User authentication** using JWT.
+- 🔑 **Secure API access** with access tokens.
+- 👤 **Role-based authorization** for different users.
+- ✅ **Token validation middleware** to verify access tokens.
+- ⚠️ **Exception handling** for authentication and authorization errors.
 
-## API Endpoints
-### Authentication
+## 📌 API Endpoints
+
+### 🔑 Authentication
 - `POST /login` - Authenticate a user and return an access token.
-- `POST /users` - Create a user.
-### Protected Routes (Require Authentication)
-- `GET /users` - Get authenticated list users.
-- `DELETE /users/id` - Delete a user.
-- `PUT /users` - Update a user.
+- `POST /users` - Create a new user.
 
-## Security Implementation
-- Uses **Spring Security** for authentication and authorization.
-- Implements JWT-based authentication with token expiration.
-- Secured API endpoints using role-based access control (RBAC).
+### 🔒 Protected Routes (Require Authentication)
+- `GET /users` - Retrieve a list of users (requires authentication).
+- `DELETE /users/{id}` - Delete a user by ID.
+- `PUT /users` - Update user details.
+
+## 🏗️ Project Structure
+```
+├── src/main/java/com/example/authentication
+│   ├── config         # Security and JWT configurations
+│   ├── controller     # REST API controllers
+│   ├── model          # Entity classes
+│   ├── repository     # Database repositories
+│   ├── service        # Business logic & JWT handling
+│   ├── exception      # Custom exception handling
+├── src/main/resources
+│   ├── application.properties  # App configuration
+├── pom.xml (Maven dependencies)
+├── build.gradle (Gradle dependencies)
+└── README.md
+```
+
+
