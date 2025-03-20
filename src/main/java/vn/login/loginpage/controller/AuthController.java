@@ -33,17 +33,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<RestLoginDTO> login(@RequestBody LoginDTO loginDTO) throws InvalidException {
+    public ResponseEntity<RestLoginDTO> login(@RequestBody LoginDTO loginDTO) {
         RestLoginDTO res = new RestLoginDTO();
-        User currentUserDB = this.userService.getUserByUserName(loginDTO.getUsername());
-        if (currentUserDB == null) {
-            throw new InvalidException("User not found");
-        }
-        RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin(
-                currentUserDB.getId(),
-                currentUserDB.getEmail(),
-                currentUserDB.getName());
-        res.setUserLogin(userLogin);
         // input username/password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());

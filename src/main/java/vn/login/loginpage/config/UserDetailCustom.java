@@ -23,6 +23,9 @@ public class UserDetailCustom implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         vn.login.loginpage.domain.User user = this.userService.getUserByUserName(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("username/password invalid");
+        }
         return new User(user.getEmail(), user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }

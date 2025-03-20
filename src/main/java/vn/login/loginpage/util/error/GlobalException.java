@@ -13,15 +13,28 @@ import vn.login.loginpage.domain.response.RestResponse;
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(value = {
-            InvalidException.class,
-            UsernameNotFoundException.class,
-            BadCredentialsException.class,
+            InvalidException.class
     })
     public ResponseEntity<RestResponse<Object>> handleException(Exception e) {
         RestResponse<Object> response = new RestResponse<Object>();
         response.setStatusCode(HttpStatus.BAD_REQUEST.value());
         response.setError(e.getMessage());
         response.setMessage("Exception occurs ...");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(value = {
+            UsernameNotFoundException.class,
+            BadCredentialsException.class,
+
+    })
+
+    public ResponseEntity<RestResponse<Object>> handleUserNotFoundEx(Exception e) {
+        RestResponse<Object> response = new RestResponse<Object>();
+        response.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        response.setError(e.getMessage());
+        response.setMessage("Username/Password invalid");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
