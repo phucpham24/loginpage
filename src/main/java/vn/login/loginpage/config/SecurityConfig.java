@@ -52,7 +52,10 @@ public class SecurityConfig {
 
         String[] whiteList = {
                 "/",
-                "/login"
+                "/login",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
         };
 
         http
