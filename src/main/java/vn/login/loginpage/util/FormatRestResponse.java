@@ -1,6 +1,7 @@
 package vn.login.loginpage.util;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -28,9 +29,14 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
         RestResponse<Object> restResponse = new RestResponse<Object>();
         restResponse.setStatusCode(status);
 
-        // if (body instanceof String) {
-        // return body;
-        // }
+        if (body instanceof String || body instanceof Resource) {
+            return body;
+        }
+
+        String path = request.getURI().getPath();
+        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
+            return body;
+        }
 
         if (status >= 400) {
             restResponse.setError("call API Failed");
