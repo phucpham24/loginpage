@@ -19,10 +19,9 @@ import vn.login.loginpage.domain.response.ResResponse;
 public class GlobalException {
 
     @ExceptionHandler(value = {
-            BadCredentialsException.class,
             InvalidException.class
     })
-    public Mono<ResponseEntity<ResResponse<Object>>> handleBadCredentialException(InvalidException ex) {
+    public Mono<ResponseEntity<ResResponse<Object>>> handleInvalidException(InvalidException ex) {
         ResResponse<Object> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
         res.setError(ex.getMessage());
@@ -32,27 +31,48 @@ public class GlobalException {
     }
 
     @ExceptionHandler(value = {
+            BadCredentialsException.class
+    })
+    public Mono<ResponseEntity<ResResponse<Object>>> handleBadCredentialException(BadCredentialsException ex) {
+        ResResponse<Object> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Invalid username or password");
+
+        return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res));
+    }
+
+    @ExceptionHandler(value = {
             UsernameNotFoundException.class
     })
-    public Mono<ResponseEntity<ResResponse<Object>>> handleUserNotFoundException(InvalidException ex) {
+    public Mono<ResponseEntity<ResResponse<Object>>> handleUserNotFoundException(UsernameNotFoundException ex) {
         ResResponse<Object> res = new ResResponse<>();
-        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        res.setStatusCode(HttpStatus.NOT_FOUND.value());
         res.setError(ex.getMessage());
         res.setMessage("UserName not found ....");
 
-        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res));
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(res));
     }
 
-    // @ExceptionHandler(value = {
-    // PermissionException.class
-    // })
-    // public Mono<ResponseEntity<ResResponse<Object>>>
-    // handelPermissionException(InvalidException ex) {
-    // ResResponse<Object> res = new ResResponse<>();
-    // res.setStatusCode(HttpStatus.BAD_REQUEST.value());
-    // res.setError(ex.getMessage());
-    // res.setMessage("Forbidden ....");
+    @ExceptionHandler(value = {
+            PermissionException.class
+    })
+    public Mono<ResponseEntity<ResResponse<Object>>> handelPermissionException(PermissionException ex) {
+        ResResponse<Object> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.FORBIDDEN.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Forbidden ....");
 
-    // return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(res));
-    // }
+        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(res));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public Mono<ResponseEntity<ResResponse<Object>>> handleGenericException(Exception ex) {
+        ResResponse<Object> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Internal server error");
+
+        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res));
+    }
 }

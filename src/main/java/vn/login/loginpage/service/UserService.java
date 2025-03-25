@@ -34,6 +34,10 @@ public class UserService {
                 .hasElement();
     }
 
+    public Mono<User> findUserByEmail(String email) {
+        return this.userRepository.findUserByEmail(email);
+    }
+
     public Flux<User> findAllUser() {
         return this.userRepository.findAll();
     }
