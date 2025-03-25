@@ -15,4 +15,5 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     Mono<User> findUserByRefreshToken(String refreshToken);
 
     Mono<User> findUserById(long id);
+
 }

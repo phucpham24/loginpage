@@ -7,6 +7,6 @@
                             gender ENUM('MALE', 'FEMALE', 'OTHER'), -- Assuming GenderEnum has these values
                             address VARCHAR(255),
                             refresh_token VARCHAR(255),
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            created_at TIMESTAMP NULL DEFAULT NULL,
                             updated_at TIMESTAMP NULL DEFAULT NULL
                         );

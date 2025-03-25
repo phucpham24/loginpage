@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import vn.login.loginpage.domain.User;
+import vn.login.loginpage.domain.response.ResCreateUserDTO;
 import vn.login.loginpage.domain.response.ResResponse;
 import vn.login.loginpage.service.UserService;
 import vn.login.loginpage.util.error.InvalidException;
+import vn.login.loginpage.util.response.ResponseWrapper;
 
 import java.util.List;
 
@@ -24,109 +26,47 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
-
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
 
     }
 
-    @PostMapping("/users")
-    public Mono<ResponseEntity<ResResponse<User>>> createNewUser(@RequestBody User user) {
-        return userService.checkExistsByEmail(user.getEmail())
-                .flatMap(exists -> {
-                    if (exists) {
-                        // Throwing reactive exception here
-                        return Mono.error(new InvalidException(
-                                "Email " + user.getEmail() + " already exists. Please use another email."));
-                    }
-                    String hashPassword = this.passwordEncoder.encode(user.getPassword());
-                    user.setPassword(hashPassword);
-                    return userService.handleSaveUser(user)
-                            .map(savedUser -> {
-                                ResResponse<User> res = new ResResponse<>();
-                                res.setStatusCode(HttpStatus.CREATED.value());
-                                res.setMessage("User created successfully");
-                                res.setData(savedUser);
-                                res.setError(null);
-                                return ResponseEntity.status(HttpStatus.CREATED).body(res);
-                            });
-                });
+    @PostMapping
+    public Mono<ResResponse<ResCreateUserDTO>> createNewUser(@RequestBody User user) {
+        return ResponseWrapper.wrapMono(this.userService.createUser(user), "User created successfully",
+                HttpStatus.CREATED);
     }
 
-    // Get all users
-    @GetMapping("/users")
-    public Mono<ResponseEntity<ResResponse<List<User>>>> listUser() {
-        return userService.findAllUser()
-                .collectList()
-                .map(users -> {
-                    ResResponse<List<User>> res = new ResResponse<>();
-                    res.setStatusCode(HttpStatus.OK.value());
-                    res.setMessage("Users fetched successfully");
-                    res.setData(users);
-                    res.setError(null);
-                    return ResponseEntity.ok(res);
-                });
+    @GetMapping
+    public Mono<ResResponse<List<User>>> listUser() {
+        return ResponseWrapper.wrapFlux(this.userService.findAllUser(), "Users fetched successfully", HttpStatus.OK);
     }
 
-    // Get user by ID
-    @GetMapping("/users/{id}")
-    public Mono<ResponseEntity<ResResponse<User>>> findUser(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .switchIfEmpty(Mono.error(new InvalidException("User with ID " + id + " not found")))
-                .map(user -> {
-                    ResResponse<User> res = new ResResponse<>();
-                    res.setStatusCode(HttpStatus.OK.value());
-                    res.setMessage("User fetched successfully");
-                    res.setData(user);
-                    res.setError(null);
-                    return ResponseEntity.ok(res);
-                });
+    @GetMapping("/{id}")
+    public Mono<ResResponse<User>> findUser(@PathVariable Long id) {
+        return ResponseWrapper.wrapMono(
+                this.userService.getUserById(id)
+                        .switchIfEmpty(Mono.error(new InvalidException("User with ID " + id + " not found"))),
+                "User fetched successfully", HttpStatus.OK);
     }
 
-    // Update user
-    @PutMapping("/users")
-    public Mono<ResponseEntity<ResResponse<User>>> updateUser(@RequestBody User user) {
-        return userService.getUserById(user.getId())
-                .switchIfEmpty(Mono.error(new InvalidException("User with ID " + user.getId() + " not found")))
-                .flatMap(existingUser -> {
-                    existingUser.setName(user.getName());
-                    existingUser.setAddress(user.getAddress());
-                    existingUser.setAge(user.getAge());
-                    existingUser.setPassword(user.getPassword());
-                    existingUser.setEmail(user.getEmail());
-                    existingUser.setGender(user.getGender());
-                    existingUser.setUpdatedAt(java.time.Instant.now());
-
-                    return userService.handleSaveUser(existingUser)
-                            .map(savedUser -> {
-                                ResResponse<User> res = new ResResponse<>();
-                                res.setStatusCode(HttpStatus.OK.value());
-                                res.setMessage("User updated successfully");
-                                res.setData(savedUser);
-                                res.setError(null);
-                                return ResponseEntity.ok(res);
-                            });
-                });
+    @PutMapping
+    public Mono<ResResponse<ResCreateUserDTO>> updateUser(@RequestBody User user) {
+        return ResponseWrapper.wrapMono(this.userService.updateUser(user), "User updated successfully", HttpStatus.OK);
     }
 
     // Delete user
-    @DeleteMapping("/users/{id}")
-    public Mono<ResponseEntity<ResResponse<Object>>> deleteUser(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .switchIfEmpty(Mono.error(new InvalidException("User with ID " + id + " not found")))
-                .flatMap(user -> userService.deleteUserById(id)
-                        .then(Mono.fromSupplier(() -> {
-                            ResResponse<Object> res = new ResResponse<>();
-                            res.setStatusCode(HttpStatus.OK.value());
-                            res.setMessage("User deleted successfully");
-                            res.setData(null);
-                            res.setError(null);
-                            return ResponseEntity.status(HttpStatus.OK).body(res);
-                        })));
+    @DeleteMapping("/{id}")
+    public Mono<ResResponse<Object>> deleteUser(@PathVariable Long id) {
+        return ResponseWrapper.wrapMono(
+                this.userService.deleteUserById(id).then(Mono.justOrEmpty(
+                        null)),
+                "User deleted successfully",
+                HttpStatus.OK);
     }
+
 }
