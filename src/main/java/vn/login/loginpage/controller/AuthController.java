@@ -31,7 +31,7 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public Mono<ResResponse<ResLoginDTO>> login(@RequestBody ReqLoginDTO loginDTO) {
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());

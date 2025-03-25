@@ -64,7 +64,7 @@ public class SecurityConfig {
 
         String[] whiteList = {
                 "/",
-                "/auth/login",
+                "/login",
                 "/v3/api-docs/**", // <-- Required for Swagger
                 "/swagger-ui/**",
                 "/swagger-ui.html",
