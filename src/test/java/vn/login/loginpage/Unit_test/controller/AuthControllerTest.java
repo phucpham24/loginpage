@@ -86,10 +86,10 @@ class AuthControllerTest {
 
                 StepVerifier.create(authController.login(loginDTO))
                                 .assertNext(response -> {
-                                        assertEquals(200, response.getStatusCode());
-                                        assertEquals("Login successful", response.getMessage());
+                                        assertEquals(HttpStatus.OK, response.getStatusCode());
+                                        assertEquals("Login successful", response.getBody().getMessage());
 
-                                        ResLoginDTO dto = response.getData();
+                                        ResLoginDTO dto = response.getBody().getData();
                                         assertNotNull(dto);
                                         assertEquals("mock-jwt-token", dto.getAccessToken());
 

@@ -42,8 +42,8 @@ class UserControllerTest {
     void setUp() {
         testUser = new User();
         testUser.setId(1L);
-        testUser.setName("Alice");
-        testUser.setEmail("alice@example.com");
+        testUser.setName("phucsaiyan");
+        testUser.setEmail("phucsaiyan@example.com");
         testUser.setPassword("secret");
         testUser.setAge(25);
         testUser.setGender(GenderEnum.FEMALE);
@@ -66,9 +66,9 @@ class UserControllerTest {
 
         StepVerifier.create(userController.createNewUser(testUser))
                 .assertNext(response -> {
-                    assertEquals("User created successfully", response.getMessage());
-                    assertEquals(HttpStatus.CREATED, HttpStatus.valueOf(response.getStatusCode()));
-                    assertEquals("Alice", response.getData().getName());
+                    assertEquals("User created successfully", response.getBody().getMessage());
+                    assertEquals(HttpStatus.CREATED, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals("phucsaiyan", response.getBody().getData().getName());
                 })
                 .verifyComplete();
     }
@@ -79,9 +79,9 @@ class UserControllerTest {
 
         StepVerifier.create(userController.findUser(1L))
                 .assertNext(response -> {
-                    assertEquals("User fetched successfully", response.getMessage());
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getStatusCode()));
-                    assertEquals("Alice", response.getData().getName());
+                    assertEquals("User fetched successfully", response.getBody().getMessage());
+                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals("phucsaiyan", response.getBody().getData().getName());
                 })
                 .verifyComplete();
     }
@@ -102,9 +102,9 @@ class UserControllerTest {
 
         StepVerifier.create(userController.listUser())
                 .assertNext(response -> {
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getStatusCode()));
-                    assertEquals(1, response.getData().size());
-                    assertEquals("Alice", response.getData().get(0).getName());
+                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals(1, response.getBody().getData().size());
+                    assertEquals("phucsaiyan", response.getBody().getData().get(0).getName());
                 })
                 .verifyComplete();
     }
@@ -115,9 +115,9 @@ class UserControllerTest {
 
         StepVerifier.create(userController.updateUser(testUser))
                 .assertNext(response -> {
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getStatusCode()));
-                    assertEquals("User updated successfully", response.getMessage());
-                    assertEquals("Alice", response.getData().getName());
+                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals("User updated successfully", response.getBody().getMessage());
+                    assertEquals("phucsaiyan", response.getBody().getData().getName());
                 })
                 .verifyComplete();
     }
@@ -128,9 +128,9 @@ class UserControllerTest {
 
         StepVerifier.create(userController.deleteUser(1L))
                 .assertNext(response -> {
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getStatusCode()));
-                    assertEquals("User deleted successfully", response.getMessage());
-                    assertNull(response.getData());
+                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals("User deleted successfully", response.getBody().getMessage());
+                    assertNull(response.getBody().getData());
                 })
                 .verifyComplete();
     }

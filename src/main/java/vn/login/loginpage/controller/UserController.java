@@ -36,18 +36,18 @@ public class UserController {
     }
 
     @PostMapping
-    public Mono<ResResponse<ResCreateUserDTO>> createNewUser(@RequestBody User user) {
+    public Mono<ResponseEntity<ResResponse<ResCreateUserDTO>>> createNewUser(@RequestBody User user) {
         return ResponseWrapper.wrapMono(this.userService.createUser(user), "User created successfully",
                 HttpStatus.CREATED);
     }
 
     @GetMapping
-    public Mono<ResResponse<List<User>>> listUser() {
+    public Mono<ResponseEntity<ResResponse<List<User>>>> listUser() {
         return ResponseWrapper.wrapFlux(this.userService.findAllUser(), "Users fetched successfully", HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public Mono<ResResponse<User>> findUser(@PathVariable Long id) {
+    public Mono<ResponseEntity<ResResponse<User>>> findUser(@PathVariable Long id) {
         return ResponseWrapper.wrapMono(
                 this.userService.getUserById(id)
                         .switchIfEmpty(Mono.error(new InvalidException("User with ID " + id + " not found"))),
@@ -55,13 +55,13 @@ public class UserController {
     }
 
     @PutMapping
-    public Mono<ResResponse<ResCreateUserDTO>> updateUser(@RequestBody User user) {
+    public Mono<ResponseEntity<ResResponse<ResCreateUserDTO>>> updateUser(@RequestBody User user) {
         return ResponseWrapper.wrapMono(this.userService.updateUser(user), "User updated successfully", HttpStatus.OK);
     }
 
     // Delete user
     @DeleteMapping("/{id}")
-    public Mono<ResResponse<Object>> deleteUser(@PathVariable Long id) {
+    public Mono<ResponseEntity<ResResponse<Object>>> deleteUser(@PathVariable Long id) {
         return ResponseWrapper.wrapMono(
                 this.userService.deleteUserById(id).then(Mono.justOrEmpty(
                         null)),
