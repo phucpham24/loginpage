@@ -47,11 +47,11 @@ public class GlobalException {
     })
     public Mono<ResponseEntity<ResResponse<Object>>> handleUserNotFoundException(UsernameNotFoundException ex) {
         ResResponse<Object> res = new ResResponse<>();
-        res.setStatusCode(HttpStatus.NOT_FOUND.value());
+        res.setStatusCode(HttpStatus.UNAUTHORIZED.value());
         res.setError(ex.getMessage());
-        res.setMessage("UserName not found ....");
+        res.setMessage("Invalid username or password");
 
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(res));
+        return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res));
     }
 
     @ExceptionHandler(value = {
