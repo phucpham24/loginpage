@@ -32,7 +32,6 @@ This project is a **Spring Boot** application that implements **JWT (JSON Web To
 │   ├── exception      # Custom exception handling
 ├── src/main/resources
 │   ├── application.properties  # App configuration
-├── pom.xml (Maven dependencies)
 ├── build.gradle (Gradle dependencies)
 └── README.md
 ```
