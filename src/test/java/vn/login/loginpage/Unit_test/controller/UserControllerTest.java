@@ -60,6 +60,10 @@ class UserControllerTest {
         userDto.setCreatedAt(testUser.getCreatedAt());
     }
 
+    // ✅ Test that creating a new user through the controller returns the correct
+    // response.
+    // Ensures the service is called and a 201 CREATED response with expected data
+    // is returned.
     @Test
     void testCreateNewUser() {
         when(userService.createUser(any(User.class))).thenReturn(Mono.just(userDto));
@@ -73,6 +77,8 @@ class UserControllerTest {
                 .verifyComplete();
     }
 
+    // ✅ Test that finding a user by ID returns a valid response with user data.
+    // Simulates a successful lookup with a known user.
     @Test
     void testFindUserById() {
         when(userService.getUserById(1L)).thenReturn(Mono.just(testUser));
@@ -86,6 +92,9 @@ class UserControllerTest {
                 .verifyComplete();
     }
 
+    // ❌ Test that finding a user by ID throws an InvalidException when the user is
+    // not found.
+    // Ensures proper error propagation from service to controller.
     @Test
     void testFindUserById_NotFound() {
         when(userService.getUserById(1L)).thenReturn(Mono.empty());
@@ -96,6 +105,9 @@ class UserControllerTest {
                 .verify();
     }
 
+    // ✅ Test that listing all users returns a list with correct status and user
+    // data.
+    // Ensures list endpoint works and response is correctly wrapped.
     @Test
     void testListUsers() {
         when(userService.findAllUser()).thenReturn(Flux.just(testUser));
@@ -109,6 +121,8 @@ class UserControllerTest {
                 .verifyComplete();
     }
 
+    // ✅ Test that updating a user returns a valid response with updated data.
+    // Ensures update logic is properly triggered and response is wrapped correctly.
     @Test
     void testUpdateUser() {
         when(userService.updateUser(any(User.class))).thenReturn(Mono.just(userDto));
@@ -122,6 +136,8 @@ class UserControllerTest {
                 .verifyComplete();
     }
 
+    // ✅ Test that deleting a user returns a success response with no data.
+    // Simulates successful deletion and checks for proper message and status.
     @Test
     void testDeleteUser() {
         when(userService.deleteUserById(1L)).thenReturn(Mono.empty());

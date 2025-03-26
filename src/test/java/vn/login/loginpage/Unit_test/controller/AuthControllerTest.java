@@ -1,10 +1,7 @@
 package vn.login.loginpage.Unit_test.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-
-import java.time.Instant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,28 +13,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import reactor.test.StepVerifier;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import vn.login.loginpage.controller.AuthController;
 import vn.login.loginpage.domain.User;
 import vn.login.loginpage.domain.request.ReqLoginDTO;
-import vn.login.loginpage.domain.response.ResCreateUserDTO;
 import vn.login.loginpage.domain.response.ResLoginDTO;
-import vn.login.loginpage.repository.UserRepository;
 import vn.login.loginpage.service.UserService;
 import vn.login.loginpage.util.SecurityUtil;
-import vn.login.loginpage.util.constant.GenderEnum;
-import vn.login.loginpage.util.error.InvalidException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -73,6 +63,10 @@ class AuthControllerTest {
                 lenient().when(mockAuthentication.getName()).thenReturn("phucsaiyan@example.com");
         }
 
+        // ✅ Test successful login flow:
+        // - Simulates valid credentials and authentication
+        // - Mocks finding the user and generating a JWT token
+        // - Verifies that response contains expected token and user data
         @Test
         void testLoginSuccess() {
                 when(authenticationManager.authenticate(any(Authentication.class)))
@@ -101,6 +95,10 @@ class AuthControllerTest {
                                 .verifyComplete();
         }
 
+        // ❌ Test login failure due to authentication error:
+        // - Simulates invalid credentials causing a BadCredentialsException(invalid
+        // Email/Password)
+        // - Verifies that the error is propagated correctly with the expected message
         @Test
         void testLogin_Failure_AuthenticationError() {
                 when(authenticationManager.authenticate(any(Authentication.class)))

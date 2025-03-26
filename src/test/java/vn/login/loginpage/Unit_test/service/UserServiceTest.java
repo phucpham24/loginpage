@@ -56,6 +56,9 @@ class UserServiceTest {
         testUser.setCreatedAt(Instant.now());
     }
 
+    // ✅ Test that a user is successfully created when the email doesn't already
+    // exist.
+    // Ensures password encoding and default fields are handled correctly.
     @Test
     void testCreateUser_Success() {
         when(userRepository.findUserByEmail("phucsaiyan@example.com")).thenReturn(Mono.empty());
@@ -71,6 +74,8 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
+    // ❌ Test that user creation fails if the email already exists.
+    // Ensures duplicate user validation works.
     @Test
     void testCreateUser_EmailAlreadyExists() {
         when(userRepository.findUserByEmail("phucsaiyan@example.com")).thenReturn(Mono.just(testUser));
@@ -81,6 +86,7 @@ class UserServiceTest {
                 .verify();
     }
 
+    // ✅ Test that retrieving a user by ID returns the correct user if found.
     @Test
     void testGetUserById_UserFound() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.just(testUser));
@@ -90,6 +96,7 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
+    // ❌ Test that retrieving a user by ID returns an empty Mono when not found.
     @Test
     void testGetUserById_NotFound() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.empty());
@@ -99,6 +106,8 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
+    // ✅ Test that deleting a user by ID completes successfully when the user
+    // exists.
     @Test
     void testDeleteUserById_Success() {
         when(userRepository.findById(1L)).thenReturn(Mono.just(testUser));
@@ -108,6 +117,8 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
+    // ❌ Test that deleting a user by ID throws an exception when the user doesn't
+    // exist.
     @Test
     void testDeleteUserById_NotFound() {
         when(userRepository.findById(1L)).thenReturn(Mono.empty());
@@ -118,6 +129,8 @@ class UserServiceTest {
                 .verify();
     }
 
+    // ✅ Test that updating a user works correctly when the user exists and email
+    // remains unchanged.
     @Test
     void testUpdateUser_Success() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.just(testUser));
@@ -140,6 +153,7 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
+    // ❌ Test that updating the user's email is not allowed and throws an exception.
     @Test
     void testUpdateUser_ChangingEmailNotAllowed() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.just(testUser));
