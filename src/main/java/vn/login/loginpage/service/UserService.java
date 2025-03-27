@@ -3,6 +3,7 @@ package vn.login.loginpage.service;
 import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import vn.login.loginpage.domain.User;
 import vn.login.loginpage.domain.response.ResCreateUserDTO;
 import vn.login.loginpage.domain.response.ResResponse;
 import vn.login.loginpage.domain.response.ResUpdateUserDTO;
+import vn.login.loginpage.domain.response.ResUserDTO;
 import vn.login.loginpage.repository.UserRepository;
 import vn.login.loginpage.util.error.InvalidException;
 
@@ -38,8 +40,17 @@ public class UserService {
         return this.userRepository.findUserByEmail(email);
     }
 
-    public Flux<User> findAllUser() {
-        return this.userRepository.findAll();
+    public Flux<ResUserDTO> findAllUser() {
+        return this.userRepository.findAll()
+                .map(user -> new ResUserDTO(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getName(),
+                        user.getGender(),
+                        user.getAddress(),
+                        user.getAge(),
+                        user.getUpdatedAt(),
+                        user.getCreatedAt()));
     }
 
     public Mono<User> getUserById(long id) {
@@ -58,7 +69,7 @@ public class UserService {
                     user.setPassword(hashedPassword);
                     user.setCreatedAt(Instant.now());
 
-                    return handleSaveUser(user)
+                    return this.handleSaveUser(user)
                             .map(this::convertUserToUserDTO);
                 });
     }
@@ -90,7 +101,7 @@ public class UserService {
         return resUpdateUserDTO;
     }
 
-    public Mono<ResCreateUserDTO> updateUser(User user) {
+    public Mono<ResUpdateUserDTO> updateUser(User user) {
         return this.getUserById(user.getId())
                 .switchIfEmpty(Mono.error(new InvalidException("User with ID " + user.getId() + " not found")))
                 .flatMap(existingUser -> {
@@ -106,14 +117,24 @@ public class UserService {
                     existingUser.setUpdatedAt(Instant.now());
 
                     return this.handleSaveUser(existingUser)
-                            .map(this::convertUserToUserDTO); // map to ResCreateUserDTO
+                            .map(this::convertUserToUserUpdateDTO); // map to ResCreateUserDTO
                 });
     }
 
     public Mono<Object> deleteUserById(Long id) {
-        return userRepository.findById(id)
+        return this.userRepository.findById(id)
                 .switchIfEmpty(Mono.error(new InvalidException("User with ID " + id + " not found")))
                 .flatMap(existingUser -> this.userRepository.deleteById(id));
+    }
+
+    public Mono<Void> updateUserToken(String refreshToken, String email) {
+        return this.userRepository.findUserByEmail(email)
+                .switchIfEmpty(Mono.error(new InvalidException("User with email " + email + " not found")))
+                .flatMap(existingUser -> {
+                    existingUser.setRefreshToken(refreshToken);
+                    return this.handleSaveUser(existingUser);
+                })
+                .then(); // To return Mono<Void>
     }
 
 }

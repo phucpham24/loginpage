@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono;
 import vn.login.loginpage.domain.User;
 import vn.login.loginpage.domain.response.ResCreateUserDTO;
 import vn.login.loginpage.domain.response.ResResponse;
+import vn.login.loginpage.domain.response.ResUpdateUserDTO;
+import vn.login.loginpage.domain.response.ResUserDTO;
 import vn.login.loginpage.service.UserService;
 import vn.login.loginpage.util.error.InvalidException;
 import vn.login.loginpage.util.response.ResponseWrapper;
@@ -42,7 +44,7 @@ public class UserController {
     }
 
     @GetMapping
-    public Mono<ResponseEntity<ResResponse<List<User>>>> listUser() {
+    public Mono<ResponseEntity<ResResponse<List<ResUserDTO>>>> listUser() {
         return ResponseWrapper.wrapFlux(this.userService.findAllUser(), "Users fetched successfully", HttpStatus.OK);
     }
 
@@ -55,7 +57,7 @@ public class UserController {
     }
 
     @PutMapping
-    public Mono<ResponseEntity<ResResponse<ResCreateUserDTO>>> updateUser(@RequestBody User user) {
+    public Mono<ResponseEntity<ResResponse<ResUpdateUserDTO>>> updateUser(@RequestBody User user) {
         return ResponseWrapper.wrapMono(this.userService.updateUser(user), "User updated successfully", HttpStatus.OK);
     }
 

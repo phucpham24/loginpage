@@ -1,6 +1,8 @@
 package vn.login.loginpage.Unit_test.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
 
@@ -10,18 +12,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import reactor.test.StepVerifier;
+import org.springframework.http.HttpStatus;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import vn.login.loginpage.controller.UserController;
 import vn.login.loginpage.domain.User;
 import vn.login.loginpage.domain.response.ResCreateUserDTO;
+import vn.login.loginpage.domain.response.ResUpdateUserDTO;
+import vn.login.loginpage.domain.response.ResUserDTO;
 import vn.login.loginpage.service.UserService;
 import vn.login.loginpage.util.constant.GenderEnum;
 import vn.login.loginpage.util.error.InvalidException;
@@ -60,41 +62,32 @@ class UserControllerTest {
         userDto.setCreatedAt(testUser.getCreatedAt());
     }
 
-    // ✅ Test that creating a new user through the controller returns the correct
-    // response.
-    // Ensures the service is called and a 201 CREATED response with expected data
-    // is returned.
     @Test
     void testCreateNewUser() {
         when(userService.createUser(any(User.class))).thenReturn(Mono.just(userDto));
 
         StepVerifier.create(userController.createNewUser(testUser))
                 .assertNext(response -> {
+                    assertEquals(HttpStatus.CREATED.value(), response.getBody().getStatusCode());
                     assertEquals("User created successfully", response.getBody().getMessage());
-                    assertEquals(HttpStatus.CREATED, HttpStatus.valueOf(response.getBody().getStatusCode()));
                     assertEquals("phucsaiyan", response.getBody().getData().getName());
                 })
                 .verifyComplete();
     }
 
-    // ✅ Test that finding a user by ID returns a valid response with user data.
-    // Simulates a successful lookup with a known user.
     @Test
     void testFindUserById() {
         when(userService.getUserById(1L)).thenReturn(Mono.just(testUser));
 
         StepVerifier.create(userController.findUser(1L))
                 .assertNext(response -> {
+                    assertEquals(HttpStatus.OK.value(), response.getBody().getStatusCode());
                     assertEquals("User fetched successfully", response.getBody().getMessage());
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
                     assertEquals("phucsaiyan", response.getBody().getData().getName());
                 })
                 .verifyComplete();
     }
 
-    // ❌ Test that finding a user by ID throws an InvalidException when the user is
-    // not found.
-    // Ensures proper error propagation from service to controller.
     @Test
     void testFindUserById_NotFound() {
         when(userService.getUserById(1L)).thenReturn(Mono.empty());
@@ -105,46 +98,56 @@ class UserControllerTest {
                 .verify();
     }
 
-    // ✅ Test that listing all users returns a list with correct status and user
-    // data.
-    // Ensures list endpoint works and response is correctly wrapped.
     @Test
     void testListUsers() {
-        when(userService.findAllUser()).thenReturn(Flux.just(testUser));
+        ResUserDTO Use = new ResUserDTO();
+        Use.setId(testUser.getId());
+        Use.setName(testUser.getName());
+        Use.setGender(testUser.getGender());
+        Use.setAddress(testUser.getAddress());
+        Use.setAge(testUser.getAge());
+        Use.setUpdatedAt(testUser.getUpdatedAt());
+        Use.setCreatedAt(testUser.getCreatedAt());
+
+        when(userService.findAllUser()).thenReturn(Flux.just(Use));
 
         StepVerifier.create(userController.listUser())
                 .assertNext(response -> {
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals(HttpStatus.OK.value(), response.getBody().getStatusCode());
                     assertEquals(1, response.getBody().getData().size());
                     assertEquals("phucsaiyan", response.getBody().getData().get(0).getName());
                 })
                 .verifyComplete();
     }
 
-    // ✅ Test that updating a user returns a valid response with updated data.
-    // Ensures update logic is properly triggered and response is wrapped correctly.
     @Test
     void testUpdateUser() {
-        when(userService.updateUser(any(User.class))).thenReturn(Mono.just(userDto));
+        ResUpdateUserDTO updateDto = new ResUpdateUserDTO();
+        updateDto.setId(testUser.getId());
+        updateDto.setName(testUser.getName());
+        updateDto.setGender(testUser.getGender());
+        updateDto.setAddress(testUser.getAddress());
+        updateDto.setAge(testUser.getAge());
+        updateDto.setUpdateAt(Instant.now());
+
+        when(userService.updateUser(any(User.class))).thenReturn(Mono.just(updateDto));
 
         StepVerifier.create(userController.updateUser(testUser))
                 .assertNext(response -> {
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals(HttpStatus.OK.value(), response.getBody().getStatusCode());
                     assertEquals("User updated successfully", response.getBody().getMessage());
                     assertEquals("phucsaiyan", response.getBody().getData().getName());
                 })
                 .verifyComplete();
     }
 
-    // ✅ Test that deleting a user returns a success response with no data.
-    // Simulates successful deletion and checks for proper message and status.
     @Test
     void testDeleteUser() {
         when(userService.deleteUserById(1L)).thenReturn(Mono.empty());
 
         StepVerifier.create(userController.deleteUser(1L))
                 .assertNext(response -> {
-                    assertEquals(HttpStatus.OK, HttpStatus.valueOf(response.getBody().getStatusCode()));
+                    assertEquals(HttpStatus.OK.value(), response.getBody().getStatusCode());
                     assertEquals("User deleted successfully", response.getBody().getMessage());
                     assertNull(response.getBody().getData());
                 })
