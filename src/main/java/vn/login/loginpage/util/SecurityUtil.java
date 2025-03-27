@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import vn.login.loginpage.domain.response.ResLoginDTO;
 
-@Component
+@Service
 public class SecurityUtil {
 
     private final JwtEncoder jwtEncoder;
