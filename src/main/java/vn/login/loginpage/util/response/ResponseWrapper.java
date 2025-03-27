@@ -25,7 +25,15 @@ public class ResponseWrapper {
                 setData(null);
                 setError(null);
             }
-        }));
+        }))
+                .onErrorResume(ex -> {
+                    ResResponse<T> response = new ResResponse<>();
+                    response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    response.setMessage("Internal server error");
+                    response.setData(null);
+                    response.setError(ex.getMessage());
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response));
+                });
     }
 
     public static <T> Mono<ResponseEntity<ResResponse<List<T>>>> wrapFlux(Flux<T> flux, String message,

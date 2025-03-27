@@ -137,4 +137,7 @@ public class UserService {
                 .then(); // To return Mono<Void>
     }
 
+    public Mono<User> getUserByRefreshTokenAndEmail(String token, String email) {
+        return this.userRepository.findUserByRefreshTokenAndEmail(token, email);
+    }
 }

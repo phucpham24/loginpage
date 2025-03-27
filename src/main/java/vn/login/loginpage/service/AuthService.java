@@ -2,6 +2,7 @@ package vn.login.loginpage.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 import vn.login.loginpage.domain.request.ReqLoginDTO;
 import vn.login.loginpage.domain.response.ResLoginDTO;
 import vn.login.loginpage.util.SecurityUtil;
+import vn.login.loginpage.util.error.InvalidException;
 import vn.login.loginpage.domain.User;
 
 @Service
@@ -59,31 +61,6 @@ public class AuthService {
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
     }
 
-    public Mono<ResLoginDTO> refreshToken(ReqLoginDTO loginDTO, ServerHttpResponse response) {
-        Authentication auth = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
-
-        return authenticationManager.authenticate(auth)
-                .flatMap(authentication -> userService.findUserByEmail(loginDTO.getUsername())
-                        .flatMap(user -> {
-                            ResLoginDTO res = buildLoginDTO(user);
-                            String accessToken = securityUtil.createAccessToken(res);
-                            res.setAccessToken(accessToken);
-                            String refreshToken = securityUtil.createRefreshToken(res);
-
-                            ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
-                                    .httpOnly(true)
-                                    .secure(true)
-                                    .path("/")
-                                    .maxAge(refreshTokenExpiration)
-                                    .sameSite("Strict")
-                                    .build();
-                            response.addCookie(refreshCookie);
-
-                            return userService.updateUserToken(refreshToken, user.getEmail())
-                                    .thenReturn(res);
-                        }));
-    }
-
     private ResLoginDTO buildLoginDTO(User user) {
         ResLoginDTO dto = new ResLoginDTO();
         dto.setUserLogin(new ResLoginDTO.UserLogin(user.getId(), user.getEmail(), user.getName()));
@@ -100,4 +77,53 @@ public class AuthService {
                     return account;
                 });
     }
+
+    public Mono<ResLoginDTO> refresh(String refreshToken, ServerHttpResponse response) {
+        if ("abc".equals(refreshToken)) {
+            return Mono.error(new InvalidException("No refresh token in cookies"));
+        }
+
+        return securityUtil.checkValidRefreshToken(refreshToken)
+                .map(jwt -> jwt
+                        .getSubject())
+                .flatMap(email -> userService.getUserByRefreshTokenAndEmail(refreshToken, email)
+                        .flatMap(user -> {
+                            ResLoginDTO dto = buildLoginDTO(user);
+                            String newAccessToken = securityUtil.createAccessToken(dto);
+                            dto.setAccessToken(newAccessToken);
+                            String newRefreshToken = securityUtil.createRefreshToken(dto);
+
+                            ResponseCookie refreshCookie = ResponseCookie
+                                    .from("refresh_token", newRefreshToken)
+                                    .httpOnly(true)
+                                    .secure(true)
+                                    .path("/")
+                                    .maxAge(refreshTokenExpiration)
+                                    .sameSite("Strict")
+                                    .build();
+                            response.addCookie(refreshCookie);
+
+                            return userService.updateUserToken(newRefreshToken, user.getEmail())
+                                    .thenReturn(dto);
+                        }));
+    }
+
+    public Mono<Void> logout(ServerHttpResponse response) {
+        return SecurityUtil.getCurrentUserLoginReactive()
+                .switchIfEmpty(Mono.error(new InvalidException("Access token is invalid or missing")))
+                .flatMap(email -> this.userService.updateUserToken(null, email)
+                        .then(Mono.fromRunnable(() -> {
+                            ResponseCookie deletedCookie = ResponseCookie
+                                    .from("refresh_token",
+                                            null)
+                                    .httpOnly(true)
+                                    .secure(true)
+                                    .path("/")
+                                    .maxAge(0)
+                                    .sameSite("Strict")
+                                    .build();
+                            response.addCookie(deletedCookie);
+                        })));
+    }
+
 }

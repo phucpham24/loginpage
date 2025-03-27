@@ -12,7 +12,7 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
 
     // Mono<User> findUserById(long Id);
 
-    Mono<User> findUserByRefreshToken(String refreshToken);
+    Mono<User> findUserByRefreshTokenAndEmail(String refreshToken, String email);
 
     Mono<User> findUserById(long id);
 
