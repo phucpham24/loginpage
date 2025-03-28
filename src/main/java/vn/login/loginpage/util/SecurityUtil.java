@@ -21,14 +21,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.util.Base64;
 
 import reactor.core.publisher.Mono;
 import vn.login.loginpage.domain.response.ResLoginDTO;
 
-@Service
+@Component
 public class SecurityUtil {
 
     private final JwtEncoder jwtEncoder;

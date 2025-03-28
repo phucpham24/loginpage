@@ -22,9 +22,11 @@ import reactor.test.StepVerifier;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import vn.login.loginpage.domain.Role;
 import vn.login.loginpage.domain.User;
 import vn.login.loginpage.domain.response.ResCreateUserDTO;
 import vn.login.loginpage.repository.UserRepository;
+import vn.login.loginpage.service.RoleService;
 import vn.login.loginpage.service.UserService;
 import vn.login.loginpage.util.constant.GenderEnum;
 import vn.login.loginpage.util.error.InvalidException;
@@ -38,10 +40,14 @@ class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private RoleService roleService;
+
     @InjectMocks
     private UserService userService;
 
     private User testUser;
+    private Role testRole;
 
     @BeforeEach
     void setUp() {
@@ -54,15 +60,18 @@ class UserServiceTest {
         testUser.setGender(GenderEnum.FEMALE);
         testUser.setAddress("Paris");
         testUser.setCreatedAt(Instant.now());
+        testUser.setRoleId(1L); // important
+
+        testRole = new Role();
+        testRole.setId(1L);
+        testRole.setName("USER");
     }
 
-    // ✅ Test that a user is successfully created when the email doesn't already
-    // exist.
-    // Ensures password encoding and default fields are handled correctly.
     @Test
     void testCreateUser_Success() {
         when(userRepository.findUserByEmail("phucsaiyan@example.com")).thenReturn(Mono.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
+        when(roleService.findRoleById(1L)).thenReturn(Mono.just(testRole));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(userService.createUser(testUser))
@@ -70,12 +79,11 @@ class UserServiceTest {
                     assertEquals("phucsaiyan", dto.getName());
                     assertEquals("phucsaiyan@example.com", dto.getEmail());
                     assertNotNull(dto.getCreatedAt());
+                    assertEquals("USER", dto.getRole().getName());
                 })
                 .verifyComplete();
     }
 
-    // ❌ Test that user creation fails if the email already exists.
-    // Ensures duplicate user validation works.
     @Test
     void testCreateUser_EmailAlreadyExists() {
         when(userRepository.findUserByEmail("phucsaiyan@example.com")).thenReturn(Mono.just(testUser));
@@ -86,7 +94,6 @@ class UserServiceTest {
                 .verify();
     }
 
-    // ✅ Test that retrieving a user by ID returns the correct user if found.
     @Test
     void testGetUserById_UserFound() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.just(testUser));
@@ -96,7 +103,6 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
-    // ❌ Test that retrieving a user by ID returns an empty Mono when not found.
     @Test
     void testGetUserById_NotFound() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.empty());
@@ -106,8 +112,6 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
-    // ✅ Test that deleting a user by ID completes successfully when the user
-    // exists.
     @Test
     void testDeleteUserById_Success() {
         when(userRepository.findById(1L)).thenReturn(Mono.just(testUser));
@@ -117,8 +121,6 @@ class UserServiceTest {
                 .verifyComplete();
     }
 
-    // ❌ Test that deleting a user by ID throws an exception when the user doesn't
-    // exist.
     @Test
     void testDeleteUserById_NotFound() {
         when(userRepository.findById(1L)).thenReturn(Mono.empty());
@@ -129,11 +131,10 @@ class UserServiceTest {
                 .verify();
     }
 
-    // ✅ Test that updating a user works correctly when the user exists and email
-    // remains unchanged.
     @Test
     void testUpdateUser_Success() {
         when(userRepository.findUserById(1L)).thenReturn(Mono.just(testUser));
+        when(roleService.findRoleById(1L)).thenReturn(Mono.just(testRole));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         User updated = new User();
@@ -143,25 +144,29 @@ class UserServiceTest {
         updated.setAge(30);
         updated.setGender(GenderEnum.FEMALE);
         updated.setAddress("Lyon");
+        updated.setRoleId(1L);
 
         StepVerifier.create(userService.updateUser(updated))
                 .assertNext(dto -> {
                     assertEquals("phucsaiyan Updated", dto.getName());
                     assertEquals("Lyon", dto.getAddress());
                     assertEquals(30, dto.getAge());
+                    assertEquals("USER", dto.getRole().getName());
                 })
                 .verifyComplete();
     }
 
-    // ❌ Test that updating the user's email is not allowed and throws an exception.
     @Test
     void testUpdateUser_ChangingEmailNotAllowed() {
+        testUser.setRoleId(1L);
         when(userRepository.findUserById(1L)).thenReturn(Mono.just(testUser));
+        when(roleService.findRoleById(1L)).thenReturn(Mono.just(testRole));
 
         User updated = new User();
         updated.setId(1L);
         updated.setName("phucsaiyan");
         updated.setEmail("new@example.com"); // different email
+        updated.setRoleId(1L);
 
         StepVerifier.create(userService.updateUser(updated))
                 .expectErrorMatches(error -> error instanceof InvalidException &&

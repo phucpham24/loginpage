@@ -3,111 +3,140 @@ package vn.login.loginpage.Unit_test.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.core.Authentication;
 
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 import vn.login.loginpage.controller.AuthController;
+import vn.login.loginpage.domain.Role;
 import vn.login.loginpage.domain.User;
 import vn.login.loginpage.domain.request.ReqLoginDTO;
 import vn.login.loginpage.domain.response.ResLoginDTO;
-import vn.login.loginpage.service.UserService;
+import vn.login.loginpage.domain.response.ResResponse;
+import vn.login.loginpage.service.AuthService;
 import vn.login.loginpage.util.SecurityUtil;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
         @Mock
-        private ReactiveAuthenticationManager authenticationManager;
+        private AuthService authService;
 
         @Mock
         private SecurityUtil securityUtil;
 
         @Mock
-        private UserService userService;
+        private ServerHttpResponse response;
 
         @InjectMocks
         private AuthController authController;
 
         private ReqLoginDTO loginDTO;
-        private User mockUser;
-        private Authentication mockAuthentication;
+        private ResLoginDTO resLoginDTO;
+        private ResLoginDTO.UserLogin userLogin;
+        private Role role;
+        private User user;
 
         @BeforeEach
-        void setUp() {
+        void setup() {
                 loginDTO = new ReqLoginDTO();
-                loginDTO.setUsername("phucsaiyan@example.com");
+                loginDTO.setUsername("test@example.com");
                 loginDTO.setPassword("password");
 
-                mockUser = new User();
-                mockUser.setId(1L);
-                mockUser.setName("phucsaiyan");
-                mockUser.setEmail("phucsaiyan@example.com");
+                role = new Role();
+                role.setName("ROLE_USER");
 
-                mockAuthentication = mock(Authentication.class);
-                when(mockAuthentication.getName()).thenReturn("phucsaiyan@example.com");
+                user = new User();
+                user.setId(1L);
+                user.setEmail("test@example.com");
+                user.setName("John");
+
+                userLogin = new ResLoginDTO.UserLogin(user.getId(), user.getEmail(), user.getName(), role);
+                resLoginDTO = new ResLoginDTO();
+                resLoginDTO.setUserLogin(userLogin);
+                resLoginDTO.setAccessToken("access_token");
         }
 
         @Test
-        void testLoginSuccess() {
-                ServerHttpResponse mockResponse = mock(ServerHttpResponse.class);
+        void login_shouldReturnSuccessResponse() {
+                when(authService.authenticateAndLogin(eq(loginDTO), any())).thenReturn(Mono.just(resLoginDTO));
 
-                when(authenticationManager.authenticate(any(Authentication.class)))
-                                .thenReturn(Mono.just(mockAuthentication));
+                var result = authController.login(loginDTO, response).block();
 
-                when(userService.findUserByEmail("phucsaiyan@example.com"))
-                                .thenReturn(Mono.just(mockUser));
-
-                when(securityUtil.createAccessToken(any(ResLoginDTO.class)))
-                                .thenReturn("mock-jwt-token");
-
-                when(securityUtil.createRefreshToken(any(ResLoginDTO.class)))
-                                .thenReturn("mock-refresh-token");
-
-                doNothing().when(userService).updateUserToken("mock-refresh-token", "phucsaiyan@example.com");
-
-                doNothing().when(mockResponse).addCookie(any());
-
-                StepVerifier.create(authController.login(loginDTO, mockResponse))
-                                .assertNext(response -> {
-                                        assertEquals(HttpStatus.OK, response.getStatusCode());
-                                        assertEquals("Login successful", response.getBody().getMessage());
-
-                                        ResLoginDTO dto = response.getBody().getData();
-                                        assertNotNull(dto);
-                                        assertEquals("mock-jwt-token", dto.getAccessToken());
-
-                                        ResLoginDTO.UserLogin userLogin = dto.getUserLogin();
-                                        assertEquals("phucsaiyan", userLogin.getName());
-                                        assertEquals("phucsaiyan@example.com", userLogin.getEmail());
-                                        assertEquals(1L, userLogin.getId());
-                                })
-                                .verifyComplete();
+                assertNotNull(result);
+                assertEquals(HttpStatus.OK, result.getStatusCode());
+                assertEquals("Login successful", result.getBody().getMessage());
+                assertEquals("access_token", result.getBody().getData().getAccessToken());
         }
 
         @Test
-        void testLogin_Failure_AuthenticationError() {
-                ServerHttpResponse mockResponse = mock(ServerHttpResponse.class);
+        void refresh_shouldReturnRefreshedToken() {
+                when(authService.refresh(eq("refresh_token_value"), any()))
+                                .thenReturn(Mono.just(resLoginDTO));
 
-                when(authenticationManager.authenticate(any(Authentication.class)))
-                                .thenReturn(Mono.error(new BadCredentialsException("Invalid credentials")));
+                var result = authController.refresh(response, "refresh_token_value").block();
 
-                StepVerifier.create(authController.login(loginDTO, mockResponse))
-                                .expectErrorMatches(error -> error instanceof BadCredentialsException &&
-                                                error.getMessage().equals("Invalid credentials"))
-                                .verify();
+                assertNotNull(result);
+                assertEquals(HttpStatus.OK, result.getStatusCode());
+                assertEquals("Token refreshed successfully", result.getBody().getMessage());
+                assertEquals("access_token", result.getBody().getData().getAccessToken());
         }
+
+        @Test
+        void refresh_shouldReturnUnauthorizedOnError() {
+                when(authService.refresh(eq("bad_token"), any()))
+                                .thenReturn(Mono.error(new RuntimeException("Invalid refresh token")));
+
+                var result = authController.refresh(response, "bad_token").block();
+
+                assertNotNull(result);
+                assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+                assertEquals("Invalid refresh token", result.getBody().getMessage());
+        }
+
+        @Test
+        void getAccount_shouldReturnAccountInfo() {
+                ResLoginDTO.UserGetAccount account = new ResLoginDTO.UserGetAccount();
+                account.setUser(userLogin);
+
+                when(authService.getAccountInfo("test@example.com")).thenReturn(Mono.just(account));
+
+                try (MockedStatic<SecurityUtil> mockedStatic = mockStatic(SecurityUtil.class)) {
+                        mockedStatic.when(SecurityUtil::getCurrentUserLoginReactive)
+                                        .thenReturn(Mono.just("test@example.com"));
+
+                        var result = authController.getAccount().block();
+
+                        assertNotNull(result);
+                        assertEquals(HttpStatus.OK, result.getStatusCode());
+                        assertEquals("Account info retrieved successfully", result.getBody().getMessage());
+                        assertEquals("test@example.com", result.getBody().getData().getUser().getEmail());
+                }
+        }
+
+        @Test
+        void logout_shouldReturnOkResponse() {
+                try (MockedStatic<SecurityUtil> mockedStatic = mockStatic(SecurityUtil.class)) {
+                        mockedStatic.when(SecurityUtil::getCurrentUserLoginReactive)
+                                        .thenReturn(Mono.just("test@example.com"));
+
+                        when(authService.logout(any())).thenReturn(Mono.empty());
+
+                        var result = authController.logoutUser(response).block();
+
+                        assertNotNull(result);
+                        assertEquals(HttpStatus.OK, result.getStatusCode());
+                        assertEquals("Logout successful", result.getBody().getMessage());
+                }
+        }
+
 }

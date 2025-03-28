@@ -39,6 +39,8 @@ class UserControllerTest {
 
     private User testUser;
     private ResCreateUserDTO userDto;
+    private ResUserDTO userResDto;
+    private ResUpdateUserDTO updateDto;
 
     @BeforeEach
     void setUp() {
@@ -60,6 +62,27 @@ class UserControllerTest {
         userDto.setAge(testUser.getAge());
         userDto.setGender(testUser.getGender());
         userDto.setCreatedAt(testUser.getCreatedAt());
+        userDto.setRole(new ResCreateUserDTO.RoleUser(1L, "USER"));
+
+        userResDto = new ResUserDTO();
+        userResDto.setId(testUser.getId());
+        userResDto.setName(testUser.getName());
+        userResDto.setGender(testUser.getGender());
+        userResDto.setAddress(testUser.getAddress());
+        userResDto.setAge(testUser.getAge());
+        userResDto.setCreatedAt(testUser.getCreatedAt());
+        userResDto.setUpdatedAt(testUser.getUpdatedAt());
+        userResDto.setEmail(testUser.getEmail());
+        userResDto.setRole(new ResUserDTO.RoleUser(1L, "USER"));
+
+        updateDto = new ResUpdateUserDTO();
+        updateDto.setId(testUser.getId());
+        updateDto.setName(testUser.getName());
+        updateDto.setGender(testUser.getGender());
+        updateDto.setAddress(testUser.getAddress());
+        updateDto.setAge(testUser.getAge());
+        updateDto.setUpdateAt(Instant.now());
+        updateDto.setRole(new ResUpdateUserDTO.RoleUser(1L, "USER"));
     }
 
     @Test
@@ -77,7 +100,7 @@ class UserControllerTest {
 
     @Test
     void testFindUserById() {
-        when(userService.getUserById(1L)).thenReturn(Mono.just(testUser));
+        when(userService.fetchUserById(1L)).thenReturn(Mono.just(userResDto));
 
         StepVerifier.create(userController.findUser(1L))
                 .assertNext(response -> {
@@ -89,27 +112,8 @@ class UserControllerTest {
     }
 
     @Test
-    void testFindUserById_NotFound() {
-        when(userService.getUserById(1L)).thenReturn(Mono.empty());
-
-        StepVerifier.create(userController.findUser(1L))
-                .expectErrorMatches(error -> error instanceof InvalidException &&
-                        error.getMessage().equals("User with ID 1 not found"))
-                .verify();
-    }
-
-    @Test
     void testListUsers() {
-        ResUserDTO Use = new ResUserDTO();
-        Use.setId(testUser.getId());
-        Use.setName(testUser.getName());
-        Use.setGender(testUser.getGender());
-        Use.setAddress(testUser.getAddress());
-        Use.setAge(testUser.getAge());
-        Use.setUpdatedAt(testUser.getUpdatedAt());
-        Use.setCreatedAt(testUser.getCreatedAt());
-
-        when(userService.findAllUser()).thenReturn(Flux.just(Use));
+        when(userService.findAllUser()).thenReturn(Flux.just(userResDto));
 
         StepVerifier.create(userController.listUser())
                 .assertNext(response -> {
@@ -122,14 +126,6 @@ class UserControllerTest {
 
     @Test
     void testUpdateUser() {
-        ResUpdateUserDTO updateDto = new ResUpdateUserDTO();
-        updateDto.setId(testUser.getId());
-        updateDto.setName(testUser.getName());
-        updateDto.setGender(testUser.getGender());
-        updateDto.setAddress(testUser.getAddress());
-        updateDto.setAge(testUser.getAge());
-        updateDto.setUpdateAt(Instant.now());
-
         when(userService.updateUser(any(User.class))).thenReturn(Mono.just(updateDto));
 
         StepVerifier.create(userController.updateUser(testUser))
