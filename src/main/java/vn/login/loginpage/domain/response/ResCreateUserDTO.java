@@ -2,7 +2,9 @@ package vn.login.loginpage.domain.response;
 
 import java.time.Instant;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.login.loginpage.util.constant.GenderEnum;
 
@@ -18,4 +20,14 @@ public class ResCreateUserDTO {
 
     private int age;
     private Instant createdAt;
+    private RoleUser role;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RoleUser {
+        private long id;
+        private String name;
+    }
 }

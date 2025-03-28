@@ -52,9 +52,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<ResResponse<User>>> findUser(@PathVariable Long id) {
+    public Mono<ResponseEntity<ResResponse<ResUserDTO>>> findUser(@PathVariable("id") Long id) {
         return ResponseWrapper.wrapMono(
-                this.userService.getUserById(id)
+                this.userService.fetchUserById(id)
                         .switchIfEmpty(Mono.error(new InvalidException("User with ID " + id + " not found"))),
                 "User fetched successfully", HttpStatus.OK);
     }
@@ -66,7 +66,7 @@ public class UserController {
 
     // Delete user
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<ResResponse<Object>>> deleteUser(@PathVariable Long id) {
+    public Mono<ResponseEntity<ResResponse<Object>>> deleteUser(@PathVariable("id") Long id) {
         return ResponseWrapper.wrapMono(
                 this.userService.deleteUserById(id).then(Mono.justOrEmpty(
                         null)),

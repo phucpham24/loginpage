@@ -3,7 +3,11 @@ package vn.login.loginpage.domain;
 import java.time.Instant;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -12,8 +16,12 @@ import org.springframework.data.relational.core.mapping.Table;
 import io.swagger.v3.oas.annotations.media.Schema;
 import vn.login.loginpage.util.constant.GenderEnum;
 
+@Data
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table("users")
 public class User {
 
@@ -52,4 +60,7 @@ public class User {
 
     @Column("updated_at")
     private Instant updatedAt;
+
+    @Column("role_id")
+    private Long roleId; // Foreign key to Role
 }
