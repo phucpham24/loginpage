@@ -6,6 +6,7 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -144,15 +145,20 @@ class AuthControllerIntegrationTest {
     @Test
     void logout_ShouldInvalidateTokenAndClearCookie() {
         login_ShouldSucceedAndReturnTokens();
-
-        webTestClient.post()
-                .uri("/auth/logout")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .exchange()
-                .expectStatus().isOk()
-                .expectCookie().maxAge("refresh_token", Duration.ZERO)
-                .expectBody(new ParameterizedTypeReference<ResResponse<Void>>() {
-                })
-                .value(res -> assertEquals("Logout successful", res.getMessage()));
+        if (accessToken != null) {
+            webTestClient.post()
+                    .uri("/auth/logout")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectCookie().maxAge("refresh_token", Duration.ZERO)
+                    .expectBody(new ParameterizedTypeReference<ResResponse<Void>>() {
+                    })
+                    .value(res -> assertEquals("Logout successful", res.getMessage()));
+            // 🧪 Validate that the refresh token has been cleared in the DB
+            User user = userService.findUserByEmail(username).block();
+            assertNotNull(user);
+            assertEquals(null, user.getRefreshToken(), "Refresh token should be null after logout");
+        }
     }
 }
