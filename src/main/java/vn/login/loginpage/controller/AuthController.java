@@ -8,6 +8,10 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import reactor.core.publisher.Mono;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import vn.login.loginpage.domain.request.ReqLoginDTO;
 import vn.login.loginpage.domain.response.ResLoginDTO;
 import vn.login.loginpage.domain.response.ResResponse;
@@ -38,6 +42,9 @@ public class AuthController {
         }
 
         @GetMapping("/refresh")
+        @Operation(summary = "Refresh access token", description = "Uses refreshToken from HttpOnly cookie", security = @SecurityRequirement(name = ""), parameters = {
+                        @Parameter(name = "refreshToken", required = true, description = "Refresh token cookie")
+        })
         public Mono<ResponseEntity<ResResponse<ResLoginDTO>>> refresh(
                         ServerHttpResponse response,
                         @CookieValue(name = "refresh_token", defaultValue = "abc") String refreshToken) {

@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import vn.login.loginpage.domain.User;
@@ -38,6 +40,7 @@ public class UserController {
     }
 
     @PostMapping
+    @Operation(summary = "Create new user", security = @SecurityRequirement(name = ""))
     public Mono<ResponseEntity<ResResponse<ResCreateUserDTO>>> createNewUser(@RequestBody User user) {
         return ResponseWrapper.wrapMono(this.userService.createUser(user), "User created successfully",
                 HttpStatus.CREATED);

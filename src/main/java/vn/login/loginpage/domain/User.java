@@ -8,6 +8,8 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import vn.login.loginpage.util.constant.GenderEnum;
 
 @Getter
@@ -16,6 +18,7 @@ import vn.login.loginpage.util.constant.GenderEnum;
 public class User {
 
     @Id
+    @Schema(hidden = true) // This hides it from the Swagger UI
     private Long id;
 
     @NotBlank(message = "Name is required")
@@ -24,10 +27,12 @@ public class User {
 
     @NotBlank(message = "Email is required")
     @Column("email")
+    @Schema(description = "Username", required = true)
     private String email;
 
     @NotBlank(message = "Password is required")
     @Column("password")
+    @Schema(description = "Password", required = true)
     private String password;
 
     @Column("age")
