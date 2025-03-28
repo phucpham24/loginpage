@@ -140,4 +140,8 @@ public class UserService {
     public Mono<User> getUserByRefreshTokenAndEmail(String token, String email) {
         return this.userRepository.findUserByRefreshTokenAndEmail(token, email);
     }
+
+    public Mono<Void> deleteUserByEmail(String email) {
+        return this.userRepository.deleteUserByEmail(email);
+    }
 }
