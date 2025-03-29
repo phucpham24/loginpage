@@ -26,7 +26,11 @@ public class PermissionInterceptor implements WebFilter {
 
     private static final List<String> WHITELIST = List.of(
             "/",
-            "/auth/**");
+            "/auth/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/webjars/**");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

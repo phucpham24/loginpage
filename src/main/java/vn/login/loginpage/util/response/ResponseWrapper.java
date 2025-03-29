@@ -18,22 +18,14 @@ public class ResponseWrapper {
             response.setData(data);
             response.setError(null);
             return ResponseEntity.status(status).body(response);
-        }).defaultIfEmpty(ResponseEntity.status(status).body(new ResResponse<T>() {
+        }).switchIfEmpty(Mono.just(ResponseEntity.status(status).body(new ResResponse<T>() {
             {
                 setStatusCode(status.value());
                 setMessage(message);
                 setData(null);
-                setError(null);
+                setError("Empty result"); // <-- Ajout pour expliciter
             }
-        }))
-                .onErrorResume(ex -> {
-                    ResResponse<T> response = new ResResponse<>();
-                    response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                    response.setMessage("Internal server error");
-                    response.setData(null);
-                    response.setError(ex.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response));
-                });
+        })));
     }
 
     public static <T> Mono<ResponseEntity<ResResponse<List<T>>>> wrapFlux(Flux<T> flux, String message,

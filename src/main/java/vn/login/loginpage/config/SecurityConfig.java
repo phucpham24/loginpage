@@ -86,7 +86,6 @@ public class SecurityConfig {
                             "http://localhost:5173"));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "x-no-retry"));
-                    config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
                     config.setMaxAge(3600L);
                     return config;

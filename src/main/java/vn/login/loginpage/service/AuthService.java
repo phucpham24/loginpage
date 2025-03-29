@@ -103,7 +103,10 @@ public class AuthService {
 
                 return securityUtil.checkValidRefreshToken(refreshToken)
                                 .map(jwt -> jwt.getSubject())
-                                .flatMap(email -> userService.getUserByRefreshTokenAndEmail(email, refreshToken)
+                                .flatMap(email -> userService.getUserByRefreshTokenAndEmail(
+                                                refreshToken, email)
+                                                .switchIfEmpty(Mono.error(new InvalidException(
+                                                                "no found user with refresh token")))
                                                 .flatMap(user -> userService.findUserAndRoleByEmail(email)
                                                                 .flatMap(tuple -> {
                                                                         Role role = tuple.getT2();
@@ -141,7 +144,7 @@ public class AuthService {
                                                 .then(Mono.fromRunnable(() -> {
                                                         ResponseCookie deletedCookie = ResponseCookie
                                                                         .from("refresh_token",
-                                                                                        null)
+                                                                                        "")
                                                                         .httpOnly(true)
                                                                         .secure(true)
                                                                         .path("/")
