@@ -76,7 +76,7 @@ public class AuthController {
         public Mono<ResponseEntity<ResResponse<Void>>> logoutUser(ServerHttpResponse response) {
                 return this.authService.logout(response)
                                 .then(ResponseWrapper.wrapMono(
-                                                Mono.justOrEmpty((Void) null), // ✅ wrap null safely
+                                                Mono.justOrEmpty((Void) null),
                                                 "Logout successful",
                                                 HttpStatus.OK));
         }

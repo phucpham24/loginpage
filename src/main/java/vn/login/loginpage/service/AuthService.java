@@ -85,11 +85,11 @@ public class AuthService {
                                         User user = tuple.getT1();
                                         Role role = tuple.getT2();
 
-                                        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
-                                                        user.getId(),
-                                                        user.getEmail(),
-                                                        user.getName(),
-                                                        role);
+                                        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+                                        userLogin.setEmail(user.getEmail());
+                                        userLogin.setId(user.getId());
+                                        userLogin.setName(user.getName());
+                                        userLogin.setRole(role);
                                         ResLoginDTO.UserGetAccount account = new ResLoginDTO.UserGetAccount();
                                         account.setUser(userLogin);
                                         return account;

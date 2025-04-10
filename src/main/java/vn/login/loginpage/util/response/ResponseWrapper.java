@@ -23,7 +23,7 @@ public class ResponseWrapper {
                 setStatusCode(status.value());
                 setMessage(message);
                 setData(null);
-                setError("Empty result"); // <-- Ajout pour expliciter
+                setError("Empty result");
             }
         })));
     }

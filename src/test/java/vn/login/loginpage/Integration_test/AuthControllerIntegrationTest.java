@@ -60,7 +60,7 @@ class AuthControllerIntegrationTest {
     @Value("${jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenValidity;
 
-    private final String username = "test@gmail.com";
+    private final String username = "tester@gmail.com";
     private final String password = "123456";
 
     private String accessToken;
